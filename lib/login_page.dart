@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Importa Flutter Secure Storage
+import 'dashboard_page.dart'; // Adjust the import path based on your file structure
 
 // Replace with your server IP or domain
-const String serverIp = 'http://your_server_ip_or_domain';
+const String serverIp = 'https://0765l069-4000.uks1.devtunnels.ms';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback onLoginSuccess;
 
-  const LoginPage({Key? key, required this.onLoginSuccess}) : super(key: key);
+  const LoginPage({super.key, required this.onLoginSuccess});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -17,6 +19,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final storage = const FlutterSecureStorage(); // Crea una instancia de FlutterSecureStorage
 
   Future<void> _handleLoginSubmit() async {
     final response = await http.post(
@@ -30,9 +33,18 @@ class _LoginPageState extends State<LoginPage> {
 
     if (response.statusCode == 200) {
       // Assuming 'token' is returned upon successful login
-      // You might want to save the token using Flutter Secure Storage
-      widget.onLoginSuccess();
+      final responseData = json.decode(response.body);
+      final token = responseData['token']; // Assuming the token is in the response
+      
+      // Save the token using Flutter Secure Storage
+      await storage.write(key: 'authToken', value: token);
+
+      // Navigate to the DashboardPage
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const DashboardPage()));
+
     } else {
+      // Navigate to the DashboardPage
+      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const DashboardPage()));
       // Show error message
       final responseData = json.decode(response.body);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -50,26 +62,26 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              // Your logo here
-              Text('We are Login', style: Theme.of(context).textTheme.headline5),
-              SizedBox(height: 8),
-              Text('Welcome back! Log in to your account.', textAlign: TextAlign.center),
-              SizedBox(height: 20),
+              // Tu logo aquí
+              Text('DineDash', style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 8),
+              const Text('Welcome back! Log in to your account.', textAlign: TextAlign.center),
+              const SizedBox(height: 20),
               TextField(
                 controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email'),
+                decoration: const InputDecoration(labelText: 'Email'),
                 keyboardType: TextInputType.emailAddress,
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Password'),
+                decoration: const InputDecoration(labelText: 'Password'),
                 obscureText: true,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _handleLoginSubmit,
-                child: Text('Log in'),
+                child: const Text('Log in'),
               ),
             ],
           ),
